@@ -9,3 +9,6 @@ venv/
 
 # 定制脚本临时输出等
 *.out
+
+# Go 编译产物
+mvgo/mvgo
