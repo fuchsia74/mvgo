@@ -31,3 +31,7 @@ export ESXI_PASSWORD=xxx
 ```bash
 git checkout python-legacy   # 取回 manage_vms.py 及其文档
 ```
+
+## License
+
+[MIT](LICENSE)
