@@ -17,8 +17,24 @@
 # 在本目录 mvgo/ 下
 docker run --rm -v "$PWD:/src" -w /src -v mvgo-gocache:/go golang:1.25 \
     go build -o mvgo .
-# 产物 mvgo 是静态 linux/amd64 二进制,可直接拷到 ESXi 管理机运行
+# 产物 mvgo 是动态 linux/amd64 二进制,适合本机跑/调试
 ```
+
+### 跨平台静态版(便于分发)
+
+静态链接 + strip,零动态依赖,可直接 scp 到任意同架构 Linux(含 ESXi 管理机):
+
+```bash
+# amd64(x86-64)
+docker run --rm -v "$PWD:/src" -w /src -v mvgo-gocache:/go golang:1.25 \
+    sh -c 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o mvgo-linux-amd64 .'
+
+# arm64(aarch64,如 ARM 管理机 / 鲲鹏 / 树莓派)
+docker run --rm -v "$PWD:/src" -w /src -v mvgo-gocache:/go golang:1.25 \
+    sh -c 'CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o mvgo-linux-arm64 .'
+```
+
+govmomi 为纯 Go,`CGO_ENABLED=0` 下可直接交叉编译,无需目标架构工具链。
 
 也可跑测试:
 

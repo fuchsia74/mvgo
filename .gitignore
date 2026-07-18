@@ -13,3 +13,5 @@ venv/
 # Go 编译产物
 mvgo/mvgo
 mvgo/mvgo-static
+mvgo/mvgo-linux-amd64
+mvgo/mvgo-linux-arm64
