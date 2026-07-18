@@ -13,8 +13,19 @@
 
 ## 用容器编译(不装本机 Go)
 
-以下命令均在**项目根目录**执行(挂载整个仓库,源码在 `mvgo/`,产物统一输出到 `build/`)。
-`-buildvcs=false` 关掉 VCS 戳记(容器内 git 环境不完整,否则报错)。
+**快捷方式**:项目根有 `build.sh` 封装了下面所有命令:
+
+```bash
+./build.sh          # 全部:本地版 + amd64/arm64 静态版
+./build.sh local    # 仅本地动态版      ./build.sh static  # amd64+arm64
+./build.sh amd64    # 仅 amd64          ./build.sh arm64   # 仅 arm64
+./build.sh test     # go test          ./build.sh clean   # 清空 build/
+IMAGE=golang:1.25 ./build.sh   # 覆盖镜像
+```
+
+下面是等价的原始命令(供理解/定制),均在**项目根目录**执行(挂载整个仓库,
+源码在 `mvgo/`,产物输出到 `build/`)。`-buildvcs=false` 关掉 VCS 戳记
+(容器内 git 环境不完整,否则报错)。
 
 ```bash
 # 动态版,适合本机跑/调试

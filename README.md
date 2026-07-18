@@ -13,13 +13,15 @@
 ## 快速开始
 
 ```bash
-# 用容器编译(不装本机 Go),产物输出到 build/,详见 mvgo/README.md
-docker run --rm -v "$PWD:/src" -w /src/mvgo -v mvgo-gocache:/go golang:1.25 \
-    go build -buildvcs=false -o /src/build/mvgo .
+# 用容器编译(不装本机 Go),产物输出到 build/
+./build.sh            # 编全部:本地版 + amd64/arm64 静态版
+# 或 ./build.sh local / amd64 / arm64 / static / test / clean
 
 export ESXI_PASSWORD=xxx
 ./build/mvgo --host 10.0.0.10 list --prefix web
 ```
+
+编译细节(直接调 docker、交叉编译等)见 [`mvgo/README.md`](mvgo/README.md)。
 
 ## 历史:Python 版
 
