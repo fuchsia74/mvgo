@@ -12,3 +12,4 @@ venv/
 
 # Go 编译产物
 mvgo/mvgo
+mvgo/mvgo-static
