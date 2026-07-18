@@ -38,29 +38,43 @@ func main() {
 		fmt.Fprint(os.Stderr, usage)
 		os.Exit(2)
 	}
-	// 先剥离全局参数之外的子命令:约定 `mvgo --host x <cmd> ...`,
-	// 但为兼容 `mvgo <cmd> --host x ...`,让每个子命令 FlagSet 同时带全局参数。
-	cmd := os.Args[1]
-	if cmd == "-h" || cmd == "--help" {
+	if os.Args[1] == "-h" || os.Args[1] == "--help" {
 		fmt.Fprint(os.Stderr, usage)
 		os.Exit(0)
 	}
-	args := os.Args[2:]
+
+	// 两段式解析(与 Python 一致):mvgo [全局参数] <子命令> [子命令参数]。
+	// 先用全局 FlagSet 解析到第一个非 flag 的 token(即子命令名),其余留给子命令。
+	var g globalOpts
+	gfs := flag.NewFlagSet("mvgo", flag.ExitOnError)
+	addGlobal(gfs, &g)
+	if err := gfs.Parse(os.Args[1:]); err != nil {
+		os.Exit(2)
+	}
+	rest := gfs.Args() // 全局参数之后的部分:[子命令, 子命令参数...]
+	if len(rest) == 0 {
+		fmt.Fprintln(os.Stderr, "错误: 缺少子命令")
+		fmt.Fprint(os.Stderr, usage)
+		os.Exit(2)
+	}
+	g.finalizeInsecure()
+	cmd := rest[0]
+	args := rest[1:]
 
 	ctx := context.Background()
 	switch cmd {
 	case "list":
-		runList(ctx, args)
+		runList(ctx, &g, args)
 	case "power-on":
-		runPowerOn(ctx, args)
+		runPowerOn(ctx, &g, args)
 	case "power-off":
-		runPowerOff(ctx, args)
+		runPowerOff(ctx, &g, args)
 	case "delete":
-		runDelete(ctx, args)
+		runDelete(ctx, &g, args)
 	case "clone":
-		runClone(ctx, args)
+		runClone(ctx, &g, args)
 	case "customize":
-		runCustomize(ctx, args)
+		runCustomize(ctx, &g, args)
 	default:
 		fmt.Fprintf(os.Stderr, "未知子命令: %s\n\n", cmd)
 		fmt.Fprint(os.Stderr, usage)
@@ -68,16 +82,13 @@ func main() {
 	}
 }
 
-// newFlagSet 建一个带全局参数的 FlagSet(每个子命令共用全局参数)。
-func newFlagSet(name string, g *globalOpts) *flag.FlagSet {
-	fs := flag.NewFlagSet(name, flag.ExitOnError)
-	addGlobal(fs, g)
-	return fs
+// subFlagSet 建一个子命令 FlagSet(不含全局参数,全局已在 main 解析)。
+func subFlagSet(name string) *flag.FlagSet {
+	return flag.NewFlagSet(name, flag.ExitOnError)
 }
 
 // mustConnect:校验 host/password 后连接,失败即退出。
 func mustConnect(ctx context.Context, g *globalOpts) *session {
-	g.finalizeInsecure()
 	if g.host == "" {
 		die("必须指定 --host")
 	}

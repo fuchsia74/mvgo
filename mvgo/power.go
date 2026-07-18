@@ -7,17 +7,16 @@ import (
 	"github.com/vmware/govmomi/vim25/types"
 )
 
-func runPowerOn(ctx context.Context, args []string) {
-	var g globalOpts
+func runPowerOn(ctx context.Context, g *globalOpts, args []string) {
 	var f filterOpts
-	fs := newFlagSet("power-on", &g)
+	fs := subFlagSet("power-on")
 	addFilters(fs, &f)
 	yes := fs.Bool("yes", false, "跳过二次确认")
 	workers := fs.Int("workers", 8, "并发数(默认8)")
 	fs.Parse(args)
 
 	enforceFilter(&f)
-	s := mustConnect(ctx, &g)
+	s := mustConnect(ctx, g)
 	vms, err := s.selectVMs(ctx, &f)
 	if err != nil {
 		die("%v", err)
@@ -35,10 +34,9 @@ func runPowerOn(ctx context.Context, args []string) {
 	})
 }
 
-func runPowerOff(ctx context.Context, args []string) {
-	var g globalOpts
+func runPowerOff(ctx context.Context, g *globalOpts, args []string) {
 	var f filterOpts
-	fs := newFlagSet("power-off", &g)
+	fs := subFlagSet("power-off")
 	addFilters(fs, &f)
 	hard := fs.Bool("hard", false, "硬断电(PowerOff),默认优雅关机(ShutdownGuest)")
 	yes := fs.Bool("yes", false, "跳过二次确认")
@@ -46,7 +44,7 @@ func runPowerOff(ctx context.Context, args []string) {
 	fs.Parse(args)
 
 	enforceFilter(&f)
-	s := mustConnect(ctx, &g)
+	s := mustConnect(ctx, g)
 	vms, err := s.selectVMs(ctx, &f)
 	if err != nil {
 		die("%v", err)

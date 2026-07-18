@@ -126,11 +126,10 @@ func checkIPCIDR(cidr, flagName, gateway string) {
 	}
 }
 
-func runCustomize(ctx context.Context, args []string) {
-	var g globalOpts
+func runCustomize(ctx context.Context, g *globalOpts, args []string) {
 	var f filterOpts
 	var o guestOpts
-	fs := newFlagSet("customize", &g)
+	fs := subFlagSet("customize")
 	addFilters(fs, &f)
 	setHostname := fs.Bool("set-hostname", false, "把主机名设为虚机名(默认不改主机名)")
 	yes := fs.Bool("yes", false, "跳过二次确认")
@@ -140,7 +139,7 @@ func runCustomize(ctx context.Context, args []string) {
 	enforceFilter(&f)
 	validateGuestOpts(&o, "customize")
 
-	s := mustConnect(ctx, &g)
+	s := mustConnect(ctx, g)
 	vms, err := s.selectVMs(ctx, &f)
 	if err != nil {
 		die("%v", err)

@@ -6,10 +6,9 @@ import (
 	"github.com/vmware/govmomi/vim25/types"
 )
 
-func runDelete(ctx context.Context, args []string) {
-	var g globalOpts
+func runDelete(ctx context.Context, g *globalOpts, args []string) {
 	var f filterOpts
-	fs := newFlagSet("delete", &g)
+	fs := subFlagSet("delete")
 	addFilters(fs, &f)
 	keepFiles := fs.Bool("keep-files", false,
 		"仅从清单注销(UnregisterVM),保留磁盘文件;默认连同磁盘一并删除(Destroy)")
@@ -20,7 +19,7 @@ func runDelete(ctx context.Context, args []string) {
 	fs.Parse(args)
 
 	enforceFilter(&f)
-	s := mustConnect(ctx, &g)
+	s := mustConnect(ctx, g)
 	vms, err := s.selectVMs(ctx, &f)
 	if err != nil {
 		die("%v", err)

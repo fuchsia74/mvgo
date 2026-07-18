@@ -45,14 +45,13 @@ func (v *vmRef) toolsStr() string {
 	return "-"
 }
 
-func runList(ctx context.Context, args []string) {
-	var g globalOpts
+func runList(ctx context.Context, g *globalOpts, args []string) {
 	var f filterOpts
-	fs := newFlagSet("list", &g)
+	fs := subFlagSet("list")
 	addFilters(fs, &f)
 	fs.Parse(args)
 
-	s := mustConnect(ctx, &g)
+	s := mustConnect(ctx, g)
 	vms, err := s.selectVMs(ctx, &f)
 	if err != nil {
 		die("%v", err)

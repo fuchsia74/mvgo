@@ -9,10 +9,9 @@ import (
 	"github.com/vmware/govmomi/vim25/types"
 )
 
-func runClone(ctx context.Context, args []string) {
-	var g globalOpts
+func runClone(ctx context.Context, g *globalOpts, args []string) {
 	var o guestOpts
-	fs := newFlagSet("clone", &g)
+	fs := subFlagSet("clone")
 	source := fs.String("source", "", "源(模板)虚机名称")
 	prefix := fs.String("prefix", "", "新虚机名前缀")
 	count := fs.Int("count", 0, "复制数量")
@@ -46,7 +45,7 @@ func runClone(ctx context.Context, args []string) {
 			"提示: 指定了 --start-ip/--run-script 但未加 --customize,这些参数将被忽略。")
 	}
 
-	s := mustConnect(ctx, &g)
+	s := mustConnect(ctx, g)
 	src, err := s.findVM(ctx, *source)
 	if err != nil {
 		die("%v", err)
