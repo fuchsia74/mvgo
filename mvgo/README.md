@@ -13,11 +13,13 @@
 
 ## 用容器编译(不装本机 Go)
 
+以下命令均在**项目根目录**执行(挂载整个仓库,源码在 `mvgo/`,产物统一输出到 `build/`)。
+`-buildvcs=false` 关掉 VCS 戳记(容器内 git 环境不完整,否则报错)。
+
 ```bash
-# 在本目录 mvgo/ 下
-docker run --rm -v "$PWD:/src" -w /src -v mvgo-gocache:/go golang:1.25 \
-    go build -o mvgo .
-# 产物 mvgo 是动态 linux/amd64 二进制,适合本机跑/调试
+# 动态版,适合本机跑/调试
+docker run --rm -v "$PWD:/src" -w /src/mvgo -v mvgo-gocache:/go golang:1.25 \
+    go build -buildvcs=false -o /src/build/mvgo .
 ```
 
 ### 跨平台静态版(便于分发)
@@ -26,20 +28,22 @@ docker run --rm -v "$PWD:/src" -w /src -v mvgo-gocache:/go golang:1.25 \
 
 ```bash
 # amd64(x86-64)
-docker run --rm -v "$PWD:/src" -w /src -v mvgo-gocache:/go golang:1.25 \
-    sh -c 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o mvgo-linux-amd64 .'
+docker run --rm -v "$PWD:/src" -w /src/mvgo -v mvgo-gocache:/go golang:1.25 \
+    sh -c 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -trimpath -ldflags "-s -w" -o /src/build/mvgo-linux-amd64 .'
 
 # arm64(aarch64,如 ARM 管理机 / 鲲鹏 / 树莓派)
-docker run --rm -v "$PWD:/src" -w /src -v mvgo-gocache:/go golang:1.25 \
-    sh -c 'CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o mvgo-linux-arm64 .'
+docker run --rm -v "$PWD:/src" -w /src/mvgo -v mvgo-gocache:/go golang:1.25 \
+    sh -c 'CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -buildvcs=false -trimpath -ldflags "-s -w" -o /src/build/mvgo-linux-arm64 .'
 ```
 
-govmomi 为纯 Go,`CGO_ENABLED=0` 下可直接交叉编译,无需目标架构工具链。
+产物落在项目根 `build/`(已被 .gitignore 忽略)。govmomi 为纯 Go,`CGO_ENABLED=0`
+下可直接交叉编译,无需目标架构工具链。
 
 也可跑测试:
 
 ```bash
-docker run --rm -v "$PWD:/src" -w /src -v mvgo-gocache:/go golang:1.25 go test ./...
+docker run --rm -v "$PWD:/src" -w /src/mvgo -v mvgo-gocache:/go golang:1.25 \
+    go test -buildvcs=false ./...
 ```
 
 > `golang` 官方镜像需 ≥ 1.25(govmomi v0.55 要求)。`mvgo-gocache` 卷缓存依赖,加速二次编译。
