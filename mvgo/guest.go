@@ -110,7 +110,10 @@ func (gs *guestSession) downloadGuestFile(ctx context.Context, path string) (str
 
 // uploadGuestFile 把内容写入 guest 内文件(覆盖已存在)。
 func (gs *guestSession) uploadGuestFile(ctx context.Context, path string, data []byte) error {
-	p := soap.Upload{ContentLength: int64(len(data))}
+	// 必须从 DefaultUpload 起(它设了 Method="PUT");直接用 soap.Upload{}
+	// 会留空 Method,net/http 默认发 GET,ESXi 文件传输端点返回 405。
+	p := soap.DefaultUpload
+	p.ContentLength = int64(len(data))
 	attr := &types.GuestFileAttributes{}
 	return gs.tb.Upload(ctx, bytes.NewReader(data), path, p, attr, true)
 }
